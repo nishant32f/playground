@@ -1,0 +1,59 @@
+<div
+  class="sdk-content-block"
+  data-sdk-content
+  data-sdk-endpoint="{{ block.settings.endpoint }}"
+  data-sdk-type="{{ block.settings.content_type }}"
+  data-block-id="{{ block.id }}"
+>
+  <div class="sdk-placeholder">
+    <span class="sdk-loading-text">Loading content...</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // Set the app URL for the SDK to use
+    // Default uses App Proxy: /apps/sdk (no CORS needed!)
+    // Can be overridden with direct app URL if needed
+    window.__THEME_MODIFIER_APP_URL__ = "{{ block.settings.app_url | default: '/apps/sdk' }}";
+    console.log('[SDK Block] App URL configured:', window.__THEME_MODIFIER_APP_URL__);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "SDK Content",
+  "target": "section",
+  "javascript": "sdk.js",
+  "stylesheet": "blocks.css",
+  "settings": [
+    {
+      "type": "text",
+      "id": "app_url",
+      "label": "App URL (optional)",
+      "info": "Leave empty to use App Proxy (/apps/sdk). Only set if you need direct app access.",
+      "placeholder": "/apps/sdk"
+    },
+    {
+      "type": "select",
+      "id": "endpoint",
+      "label": "Content Endpoint",
+      "options": [
+        { "value": "/content", "label": "HTML Content" },
+        { "value": "/data", "label": "JSON Data" }
+      ],
+      "default": "/content"
+    },
+    {
+      "type": "select",
+      "id": "content_type",
+      "label": "Content Type",
+      "options": [
+        { "value": "html", "label": "HTML" },
+        { "value": "json", "label": "JSON" }
+      ],
+      "default": "html"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,7 @@
+api_version = "2025-01"
+name = "theme-block-extension"
+type = "theme"
+uid = "838381b2-cc88-5ccd-f389-1e20f4adf321669e84a2"
+
+[capabilities]
+network_access = true

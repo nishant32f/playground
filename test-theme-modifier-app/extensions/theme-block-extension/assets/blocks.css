@@ -1,0 +1,341 @@
+/**
+ * Theme Modifier App Blocks - Shared Styles
+ */
+
+/* ============================================
+   SDK Content Block Styles
+   ============================================ */
+
+.sdk-content-block {
+  padding: 16px;
+  min-height: 100px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.sdk-content-block.sdk-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sdk-placeholder {
+  text-align: center;
+  color: #666;
+}
+
+.sdk-loading-text {
+  display: inline-block;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.sdk-content-block.sdk-loaded {
+  background: transparent;
+}
+
+.sdk-content-block.sdk-error .sdk-error {
+  color: #d32f2f;
+  padding: 12px;
+  background: #ffebee;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.sdk-json-content pre {
+  background: #263238;
+  color: #aed581;
+  padding: 16px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ============================================
+   Layout Switcher Block Styles
+   ============================================ */
+
+.layout-switcher-block {
+  padding: 24px 0;
+}
+
+.layout-title {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Placeholder Card (shared) */
+.placeholder-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.placeholder-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.placeholder-card .card-icon {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-card .card-content h4 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.placeholder-card .card-content p {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 14px;
+}
+
+/* Grid Layout */
+.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.grid-item {
+  min-height: 180px;
+}
+
+/* List Layout */
+.layout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.list-item:hover {
+  background: #eeeeee;
+}
+
+.list-item .item-number {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.list-item .item-content {
+  flex: 1;
+  margin-left: 16px;
+}
+
+.list-item .item-title {
+  display: block;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+
+.list-item .item-description {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.list-item .item-arrow {
+  color: #999;
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.list-item:hover .item-arrow {
+  transform: translateX(4px);
+  color: #667eea;
+}
+
+/* Carousel Layout */
+.layout-carousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.carousel-slide .placeholder-card {
+  min-height: 200px;
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.carousel-prev,
+.carousel-next {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.carousel-prev:hover,
+.carousel-next:hover {
+  background: #667eea;
+  color: white;
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ddd;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.carousel-dot.active {
+  background: #667eea;
+}
+
+.carousel-dot:hover {
+  background: #764ba2;
+}
+
+/* Fallback Layout */
+.layout-fallback {
+  padding: 24px;
+  background: #fff3e0;
+  border-radius: 8px;
+  border-left: 4px solid #ff9800;
+}
+
+.layout-fallback p {
+  margin: 8px 0;
+}
+
+.layout-fallback code {
+  background: #fbe9e7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+/* ============================================
+   App Content Styles (from SDK API)
+   ============================================ */
+
+.app-content {
+  padding: 20px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+}
+
+.app-content h3 {
+  margin: 0 0 12px;
+  color: #2e7d32;
+}
+
+.app-content p {
+  margin: 8px 0;
+  color: #388e3c;
+}
+
+/* ============================================
+   Responsive Styles
+   ============================================ */
+
+@media (max-width: 768px) {
+  .layout-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .layout-title {
+    font-size: 20px;
+  }
+
+  .carousel-slide .placeholder-card {
+    min-height: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .list-item {
+    flex-wrap: wrap;
+  }
+
+  .list-item .item-content {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 12px;
+  }
+
+  .list-item .item-arrow {
+    margin-left: auto;
+  }
+}

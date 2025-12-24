@@ -1,0 +1,20 @@
+{
+  "ratings": {
+    "stars": {
+      "label": "Ratings"
+    },
+    "home": {
+      "recommendationText": "Recommended Product!"
+    }
+  },
+  "sdk_content": {
+    "loading": "Loading content...",
+    "error": "Failed to load content"
+  },
+  "layout_switcher": {
+    "title": "Featured Items",
+    "grid": "Grid",
+    "list": "List",
+    "carousel": "Carousel"
+  }
+}

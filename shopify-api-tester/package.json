@@ -1,0 +1,36 @@
+{
+  "name": "shopify-api-tester",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start --port 3100",
+    "lint": "eslint",
+    "setup": "prisma generate && prisma db push",
+    "db:studio": "prisma studio",
+    "import": "tsx scripts/import-credentials.ts",
+    "import:list": "tsx scripts/import-credentials.ts --list",
+    "import:dry-run": "tsx scripts/import-credentials.ts --dry-run"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.1",
+    "better-sqlite3": "^12.5.0",
+    "next": "16.1.1",
+    "prisma": "^6.19.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

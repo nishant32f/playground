@@ -1,0 +1,137 @@
+{% comment %}
+  Layout Switcher Block
+  Renders different layouts based on app metafield value
+  Supported layouts: grid, list, carousel
+{% endcomment %}
+
+{% assign layout_mode = app.metafields.display.layout_mode.value | default: block.settings.default_layout %}
+
+<div class="layout-switcher-block" data-layout="{{ layout_mode }}" data-block-id="{{ block.id }}">
+  <h3 class="layout-title">{{ block.settings.title | default: 'Featured Items' }}</h3>
+
+  {% case layout_mode %}
+
+    {% when 'grid' %}
+      <div class="layout-grid">
+        {% for i in (1..6) %}
+          <div class="grid-item">
+            <div class="placeholder-card">
+              <div class="card-icon">{{ i }}</div>
+              <div class="card-content">
+                <h4>Grid Item {{ i }}</h4>
+                <p>This is a grid layout item</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% when 'list' %}
+      <div class="layout-list">
+        {% for i in (1..6) %}
+          <div class="list-item">
+            <span class="item-number">{{ i }}</span>
+            <div class="item-content">
+              <span class="item-title">List Item {{ i }}</span>
+              <span class="item-description">This is a list layout item with more details</span>
+            </div>
+            <span class="item-arrow">&rarr;</span>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% when 'carousel' %}
+      <div class="layout-carousel" data-carousel>
+        <div class="carousel-track">
+          {% for i in (1..6) %}
+            <div class="carousel-slide">
+              <div class="placeholder-card">
+                <div class="card-icon">{{ i }}</div>
+                <div class="card-content">
+                  <h4>Slide {{ i }}</h4>
+                  <p>Carousel slide content</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="carousel-controls">
+          <button class="carousel-prev" aria-label="Previous slide">&larr;</button>
+          <div class="carousel-dots">
+            {% for i in (1..6) %}
+              <span class="carousel-dot{% if i == 1 %} active{% endif %}" data-slide="{{ i }}"></span>
+            {% endfor %}
+          </div>
+          <button class="carousel-next" aria-label="Next slide">&rarr;</button>
+        </div>
+      </div>
+
+      <script>
+        (function() {
+          const carousel = document.querySelector('[data-block-id="{{ block.id }}"] [data-carousel]');
+          if (!carousel) return;
+
+          const track = carousel.querySelector('.carousel-track');
+          const slides = carousel.querySelectorAll('.carousel-slide');
+          const prevBtn = carousel.querySelector('.carousel-prev');
+          const nextBtn = carousel.querySelector('.carousel-next');
+          const dots = carousel.querySelectorAll('.carousel-dot');
+          let currentSlide = 0;
+
+          function goToSlide(index) {
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+            currentSlide = index;
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+          }
+
+          prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
+          nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
+          dots.forEach((dot, i) => dot.addEventListener('click', () => goToSlide(i)));
+
+          console.log('[LayoutSwitcher] Carousel initialized');
+        })();
+      </script>
+
+    {% else %}
+      <div class="layout-fallback">
+        <p>Unknown layout mode: <code>{{ layout_mode }}</code></p>
+        <p>Supported modes: grid, list, carousel</p>
+        <p>Set the app metafield <code>app.metafields.display.layout_mode</code> or use the default layout setting.</p>
+      </div>
+
+  {% endcase %}
+</div>
+
+<script>
+  console.log('[LayoutSwitcher] Block loaded with layout:', '{{ layout_mode }}');
+</script>
+
+{% schema %}
+{
+  "name": "Layout Switcher",
+  "target": "section",
+  "stylesheet": "blocks.css",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Featured Items"
+    },
+    {
+      "type": "select",
+      "id": "default_layout",
+      "label": "Default Layout",
+      "info": "Used when app metafield (app.metafields.display.layout_mode) is not set",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "list", "label": "List" },
+        { "value": "carousel", "label": "Carousel" }
+      ],
+      "default": "grid"
+    }
+  ]
+}
+{% endschema %}
