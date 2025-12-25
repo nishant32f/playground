@@ -158,15 +158,16 @@ export default function ThemesPage() {
   };
 
   // Get file content
-  const getFileContent = async () => {
-    if (!activeStore || !selectedTheme || !selectedFile) return;
+  const getFileContent = async (filename?: string) => {
+    const fileToLoad = filename || selectedFile;
+    if (!activeStore || !selectedTheme || !fileToLoad) return;
     setLoadingOp("content");
     setResult(null);
     try {
       const res = await fetch(
         `/api/shopify/themes/${encodeURIComponent(
           selectedTheme
-        )}/files?filename=${encodeURIComponent(selectedFile)}`,
+        )}/files?filename=${encodeURIComponent(fileToLoad)}`,
         { headers: headers() }
       );
       const data = await res.json();
@@ -175,11 +176,11 @@ export default function ThemesPage() {
       const content =
         file?.body?.content || file?.body?.contentBase64 || "No content";
       setFileContent(content);
-      setResult({ type: "success", message: "File content loaded", data });
+      setNewFileContent(content);
     } catch (err) {
       setResult({
         type: "error",
-        message: err instanceof Error ? err.message : "Failed to get content",
+        message: handleApiError(err),
       });
     } finally {
       setLoadingOp(null);
@@ -211,10 +212,12 @@ export default function ThemesPage() {
         message: `File ${newFilename} saved successfully`,
         data,
       });
+      // Refresh file list to show any new files
+      await getThemeFiles();
     } catch (err) {
       setResult({
         type: "error",
-        message: err instanceof Error ? err.message : "Failed to save file",
+        message: handleApiError(err),
       });
     } finally {
       setLoadingOp(null);
@@ -243,10 +246,13 @@ export default function ThemesPage() {
       });
       setSelectedFile("");
       setFileContent("");
+      setNewFileContent("");
+      // Refresh file list
+      await getThemeFiles();
     } catch (err) {
       setResult({
         type: "error",
-        message: err instanceof Error ? err.message : "Failed to delete file",
+        message: handleApiError(err),
       });
     } finally {
       setLoadingOp(null);
@@ -434,14 +440,14 @@ export default function ThemesPage() {
               )}
             </div>
 
-            {/* Get Theme Files */}
+            {/* File Browser */}
             {selectedTheme && (
               <div className="bg-white rounded-lg border border-gray-200 p-4">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-medium text-gray-900">Theme Files</h3>
+                    <h3 className="font-medium text-gray-900">File Browser</h3>
                     <p className="text-sm text-gray-500">
-                      List files in selected theme
+                      Browse and edit theme files
                     </p>
                   </div>
                   <button
@@ -449,100 +455,157 @@ export default function ThemesPage() {
                     disabled={loadingOp === "files"}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {loadingOp === "files" ? "Loading..." : "Get Files"}
+                    {loadingOp === "files" ? "Loading..." : "Load Files"}
                   </button>
                 </div>
+
                 {themeFiles.length > 0 && (
-                  <div className="border-t pt-4 space-y-4">
-                    <input
-                      type="text"
-                      placeholder="Filter files..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      value={fileFilter}
-                      onChange={(e) => setFileFilter(e.target.value)}
-                    />
-                    <div className="max-h-48 overflow-y-auto border rounded-lg">
-                      {filteredFiles.map((file) => (
+                  <div className="flex gap-4 border-t pt-4">
+                    {/* Left Panel - File List */}
+                    <div className="w-1/3 border-r pr-4">
+                      <div className="flex gap-2 mb-3">
+                        <input
+                          type="text"
+                          placeholder="Filter files..."
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          value={fileFilter}
+                          onChange={(e) => setFileFilter(e.target.value)}
+                        />
                         <button
-                          key={file.filename}
-                          onClick={() => setSelectedFile(file.filename)}
-                          className={`w-full text-left px-3 py-2 text-sm font-mono hover:bg-gray-50 ${
-                            selectedFile === file.filename ? "bg-blue-50" : ""
-                          }`}
+                          onClick={() => {
+                            setSelectedFile("");
+                            setNewFilename("");
+                            setFileContent("");
+                            setNewFileContent("");
+                          }}
+                          className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                          title="Create new file"
                         >
-                          {file.filename}
+                          + New
                         </button>
-                      ))}
+                      </div>
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="max-h-[600px] overflow-y-auto">
+                          {filteredFiles.map((file) => (
+                            <button
+                              key={file.filename}
+                              onClick={() => {
+                                setSelectedFile(file.filename);
+                                setNewFilename(file.filename);
+                                getFileContent(file.filename);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-gray-50 border-b last:border-b-0 ${
+                                selectedFile === file.filename
+                                  ? "bg-blue-50 text-blue-900"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              {file.filename}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs text-gray-500">
+                        {filteredFiles.length} file{filteredFiles.length !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+
+                    {/* Right Panel - File Content/Editor */}
+                    <div className="flex-1">
+                      {selectedFile || newFilename ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              {selectedFile ? (
+                                <>
+                                  <h4 className="font-medium text-gray-900 font-mono text-sm">
+                                    {selectedFile}
+                                  </h4>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Edit and save file
+                                  </p>
+                                </>
+                              ) : (
+                                <>
+                                  <input
+                                    type="text"
+                                    placeholder="Enter filename (e.g., snippets/test.liquid)"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
+                                    value={newFilename}
+                                    onChange={(e) => setNewFilename(e.target.value)}
+                                  />
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Create new file
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                            {selectedFile && (
+                              <div className="flex gap-2 ml-4">
+                                <button
+                                  onClick={getFileContent}
+                                  disabled={loadingOp === "content"}
+                                  className="px-3 py-1.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
+                                >
+                                  {loadingOp === "content" ? "Loading..." : "Refresh"}
+                                </button>
+                                <button
+                                  onClick={deleteFile}
+                                  disabled={loadingOp === "delete"}
+                                  className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                                >
+                                  {loadingOp === "delete" ? "Deleting..." : "Delete"}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <textarea
+                            placeholder="File content will appear here..."
+                            rows={20}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-xs bg-gray-900 text-gray-100"
+                            value={fileContent || newFileContent}
+                            onChange={(e) => {
+                              setFileContent(e.target.value);
+                              setNewFileContent(e.target.value);
+                            }}
+                          />
+
+                          <div className="flex gap-2">
+                            <button
+                              onClick={upsertFile}
+                              disabled={!newFilename || !newFileContent || loadingOp === "upsert"}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {loadingOp === "upsert" ? "Saving..." : "Save File"}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedFile("");
+                                setNewFilename("");
+                                setFileContent("");
+                                setNewFileContent("");
+                              }}
+                              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-64 text-gray-500 text-sm border-2 border-dashed rounded-lg">
+                          Select a file from the list to view and edit, or click "+ New" to create a file
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
-              </div>
-            )}
 
-            {/* File Content */}
-            {selectedFile && (
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      {selectedFile}
-                    </h3>
-                    <p className="text-sm text-gray-500">View file content</p>
+                {themeFiles.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 text-sm border-t">
+                    Click "Load Files" to browse theme files
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={getFileContent}
-                      disabled={loadingOp === "content"}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      {loadingOp === "content" ? "Loading..." : "Get Content"}
-                    </button>
-                    <button
-                      onClick={deleteFile}
-                      disabled={loadingOp === "delete"}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-                    >
-                      {loadingOp === "delete" ? "Deleting..." : "Delete"}
-                    </button>
-                  </div>
-                </div>
-                {fileContent && (
-                  <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm max-h-96 overflow-y-auto">
-                    {fileContent}
-                  </pre>
                 )}
-              </div>
-            )}
-
-            {/* Create/Update File */}
-            {selectedTheme && (
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <h3 className="font-medium text-gray-900 mb-4">
-                  Create/Update File
-                </h3>
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Filename (e.g., snippets/test.liquid)"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono"
-                    value={newFilename}
-                    onChange={(e) => setNewFilename(e.target.value)}
-                  />
-                  <textarea
-                    placeholder="File content..."
-                    rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
-                    value={newFileContent}
-                    onChange={(e) => setNewFileContent(e.target.value)}
-                  />
-                  <button
-                    onClick={upsertFile}
-                    disabled={!newFilename || !newFileContent || loadingOp === "upsert"}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {loadingOp === "upsert" ? "Saving..." : "Save File"}
-                  </button>
-                </div>
               </div>
             )}
 
