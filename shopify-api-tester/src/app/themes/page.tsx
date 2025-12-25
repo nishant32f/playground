@@ -37,11 +37,47 @@ export default function ThemesPage() {
     message: string;
     data?: unknown;
   } | null>(null);
+  const [show401Help, setShow401Help] = useState(false);
 
   const headers = useCallback((): Record<string, string> => {
     if (!activeStore) return {};
     return { "X-Store-Id": activeStore.id };
   }, [activeStore]);
+
+  const handleApiError = (err: unknown) => {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    // Check if it's a 401 error (invalid/expired token)
+    if (errorMessage.includes("401") || errorMessage.includes("Invalid API key")) {
+      setShow401Help(true);
+    }
+    return errorMessage;
+  };
+
+  // Sync token from Remix app
+  const syncToken = async () => {
+    setLoadingOp("sync");
+    setResult(null);
+    try {
+      const res = await fetch("/api/sync-token", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Sync failed");
+      setResult({
+        type: "success",
+        message: data.message || "Token synced successfully!",
+        data,
+      });
+      setShow401Help(false); // Clear 401 help if successful
+    } catch (err) {
+      setResult({
+        type: "error",
+        message: err instanceof Error ? err.message : "Token sync failed",
+      });
+    } finally {
+      setLoadingOp(null);
+    }
+  };
 
   // Test connection
   const testConnection = async () => {
@@ -57,10 +93,11 @@ export default function ThemesPage() {
         message: "Connection successful!",
         data,
       });
+      setShow401Help(false); // Clear 401 help if successful
     } catch (err) {
       setResult({
         type: "error",
-        message: err instanceof Error ? err.message : "Connection failed",
+        message: handleApiError(err),
       });
     } finally {
       setLoadingOp(null);
@@ -85,7 +122,7 @@ export default function ThemesPage() {
     } catch (err) {
       setResult({
         type: "error",
-        message: err instanceof Error ? err.message : "Failed to list themes",
+        message: handleApiError(err),
       });
     } finally {
       setLoadingOp(null);
@@ -283,6 +320,57 @@ export default function ThemesPage() {
                 Please select a store from the dropdown above to use theme operations.
               </div>
             )}
+
+            {/* 401 Help Banner */}
+            {show401Help && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-blue-900 mb-2">
+                      Access Token Expired or Invalid
+                    </h3>
+                    <p className="text-sm text-blue-800 mb-3">
+                      Your Shopify access token needs to be refreshed. Follow these steps:
+                    </p>
+                    <ol className="text-sm text-blue-800 space-y-2 ml-4 list-decimal">
+                      <li>Make sure your Remix app is running (<code className="bg-blue-100 px-1 rounded">npm run dev</code> in test-theme-modifier-app)</li>
+                      <li>Visit the Remix app URL with your shop parameter: <br/>
+                        <code className="bg-blue-100 px-2 py-1 rounded text-xs inline-block mt-1">
+                          https://your-tunnel-url.trycloudflare.com?shop={activeStore?.storeUrl || 'your-store.myshopify.com'}
+                        </code>
+                      </li>
+                      <li>Complete the OAuth flow to re-authenticate</li>
+                      <li>The token will automatically sync, or click "Sync Token" below</li>
+                    </ol>
+                  </div>
+                  <button
+                    onClick={() => setShow401Help(false)}
+                    className="text-blue-500 hover:text-blue-700 ml-4"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Sync Token */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">Sync Token</h3>
+                  <p className="text-sm text-gray-500">
+                    Import tokens from test-theme-modifier-app database
+                  </p>
+                </div>
+                <button
+                  onClick={syncToken}
+                  disabled={loadingOp === "sync"}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {loadingOp === "sync" ? "Syncing..." : "Sync Token"}
+                </button>
+              </div>
+            </div>
 
             {/* Test Connection */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">

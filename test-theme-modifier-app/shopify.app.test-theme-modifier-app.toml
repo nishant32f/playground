@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "54151841610ad4333079b2111c1b3d4f"
+client_id = "ed9a28fda5a4e1cdc3780e3b2d411bf2"
 name = "test-theme-modifier-app"
 application_url = "https://example.com"
 embedded = true
@@ -12,22 +12,9 @@ include_config_on_deploy = true
 [webhooks]
 api_version = "2026-01"
 
-  [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
-
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_themes,write_themes"
 
 [auth]
 redirect_urls = [ "https://example.com/api/auth" ]
-
-[app_proxy]
-url = "/app-proxy"
-subpath = "sdk"
-prefix = "apps"
